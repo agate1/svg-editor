@@ -1,0 +1,40 @@
+/* #g:hover .currentPoint {
+  display:block;
+} */
+
+.currentPoint {
+  //stroke: #e64343;
+  //fill: black;
+  stroke-width: 4;
+   //display: none;
+  cursor:move;
+  }
+
+.currentPoint:hover {
+  stroke: #e64343;
+  //fill: black;
+  stroke-width: 4;
+}
+
+#cp-0 {
+  stroke: red;
+  //fill: black;
+  stroke-width: 7;
+}
+
+.controlPoint {
+  stroke: gray;
+  fill: none;
+  stroke-width: 1.5;
+}
+
+.controlPoint:hover {
+  fill:grey;
+}
+
+.controlLine {
+  stroke: black;
+  fill: gray;
+  stroke-width: 1.2;
+  stroke-dasharray: 2,2;
+}

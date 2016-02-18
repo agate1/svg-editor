@@ -19,11 +19,21 @@ var Point = (function () {
  * SVGCPoint
  */
 var SVGCPoint = (function () {
-    function SVGCPoint(p1, p2, p3) {
-        this.p1 = p1;
-        this.p2 = p2;
-        this.p3 = p3;
+    function SVGCPoint() {
     }
+    SVGCPoint.prototype.add = function (n, p) {
+        switch (n) {
+            case 1:
+                this.p1 = p;
+                break;
+            case 2:
+                this.p2 = p;
+                break;
+            case 3:
+                this.p3 = p;
+                break;
+        }
+    };
     return SVGCPoint;
 }());
 /**
@@ -89,13 +99,28 @@ var Line = (function () {
     };
     return Line;
 }());
-var p1 = new Point("100", "100");
-var p2 = new Point("200", "200");
-var p3 = new Point("300", "300");
-var c = new Circle(p1, "5", "controlPoint", "dg");
-c.draw();
-c.update("dg", p2);
-var l = new Line(p1, p2, "controlLine", "ddd");
-l.draw();
-l.update("ddd", p2, p3);
-debug.innerText = p3.x;
+// var p1 = new Point("100", "100");
+// var p2 = new Point("200", "200");
+// var p3 = new Point("300", "300");
+// var c = new Circle(p1, "5", "controlPoint", "dg");
+// c.draw();
+// c.update("dg", p2);
+// var l = new Line(p1, p2, "controlLine", "ddd");
+// l.draw();
+// l.update("ddd", p2, p3);
+// debug.innerText = p3.x;
+var commands = path.split(/(?=[LMCZ])/);
+var pts = commands.map(function (c) {
+    var points = c.slice(1, c.length).split(' '); //svg 3points
+    points.shift();
+    points.pop();
+    var svgCPoint = new SVGCPoint();
+    debug.innerText += 'new \n';
+    for (var i = 0; i < points.length; i++) {
+        var xy = points[i].split(',');
+        var pt = new Point(xy[0], xy[1]);
+        var n = i + 1;
+        svgCPoint.add(n, pt);
+        debug.innerText += pt.x + ", " + pt.y + '\n';
+    }
+});

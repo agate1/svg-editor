@@ -138,7 +138,7 @@ var pts = commands.map(function (c, k) {
 });
 pts.pop();
 //draw lines and circles
-var p0:Point;
+var p0;
 pts.forEach(function (pkt, i) {
     if (i == 0) {
         p0 = pkt.curr();

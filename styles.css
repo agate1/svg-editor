@@ -46,3 +46,11 @@
 [id^=cp2] {
     stroke: green;
 }
+
+[id^=cl1] {
+    stroke: blue;
+}
+
+[id^=cl2] {
+    stroke: green;
+}

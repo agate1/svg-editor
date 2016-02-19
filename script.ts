@@ -32,6 +32,15 @@ class SVGCPoint {
             case 3: this.p3 = p; break;
         }
     }
+    cp1(): Point {
+        return this.p1;
+    }
+    cp2(): Point {
+        return this.p2;
+    }
+    curr(): Point {
+        return this.p3;
+    }
 }
 
 /**
@@ -122,24 +131,45 @@ class Line {
 // l.update("ddd", p2, p3);
 // debug.innerText = p3.x;
 
-
+//svg path to points
 var commands = path.split(/(?=[LMCZ])/);
 
-var pts = commands.map((c) => {
+var pts: Array<SVGCPoint> = commands.map((c) => {
     var points = c.slice(1, c.length).split(' '); //svg 3points
     points.shift();
     points.pop();
 
     var svgCPoint = new SVGCPoint();
-    debug.innerText += 'new \n';
-
+        
+    debug.innerText += '\n';
     for (var i = 0; i < points.length; i++) {
         var xy = points[i].split(',');
         var pt = new Point(xy[0], xy[1]);
         var n = i + 1;
         svgCPoint.add(n, pt);
-        debug.innerText += pt.x + ", " + pt.y + '\n';
-
+        debug.innerText += '| x:' + pt.x + ", y:" + pt.y + ', ';
     }
+    return svgCPoint;
 });
+
+pts.forEach((pkt: SVGCPoint, i: number) => {
+    var p: Point = pkt.cp1();
+    var circle = new Circle(p, "3", "controlPoint", "cp1-" + i);
+    circle.draw();
+
+    if (i > 0) {
+        var p: Point = pkt.cp2();
+        var circle = new Circle(p, "3", "controlPoint", "cp2-" + i);
+        circle.draw();
+
+        var p: Point = pkt.curr();
+        var circle = new Circle(p, "3", "controlPoint", "cp3-" + i);
+        circle.draw();
+    }
+
+
+
+
+})
+
 

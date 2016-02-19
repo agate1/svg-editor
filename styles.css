@@ -3,22 +3,22 @@
 } */
 
 .currentPoint {
-  //stroke: #e64343;
-  //fill: black;
+  /*//stroke: #e64343;*/
+  /*//fill: black;*/
   stroke-width: 4;
-   //display: none;
+   /*//display: none;*/
   cursor:move;
   }
 
 .currentPoint:hover {
   stroke: #e64343;
-  //fill: black;
+  fill: black;
   stroke-width: 4;
 }
 
 #cp-0 {
   stroke: red;
-  //fill: black;
+  /*//fill: black;*/
   stroke-width: 7;
 }
 
@@ -37,4 +37,12 @@
   fill: gray;
   stroke-width: 1.2;
   stroke-dasharray: 2,2;
+}
+
+[id^=cp1] {
+    stroke: red;
+}
+
+[id^=cp2] {
+    stroke: green;
 }

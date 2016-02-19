@@ -34,6 +34,15 @@ var SVGCPoint = (function () {
                 break;
         }
     };
+    SVGCPoint.prototype.cp1 = function () {
+        return this.p1;
+    };
+    SVGCPoint.prototype.cp2 = function () {
+        return this.p2;
+    };
+    SVGCPoint.prototype.curr = function () {
+        return this.p3;
+    };
     return SVGCPoint;
 }());
 /**
@@ -109,18 +118,33 @@ var Line = (function () {
 // l.draw();
 // l.update("ddd", p2, p3);
 // debug.innerText = p3.x;
+//svg path to points
 var commands = path.split(/(?=[LMCZ])/);
 var pts = commands.map(function (c) {
     var points = c.slice(1, c.length).split(' '); //svg 3points
     points.shift();
     points.pop();
     var svgCPoint = new SVGCPoint();
-    debug.innerText += 'new \n';
+    debug.innerText += '\n';
     for (var i = 0; i < points.length; i++) {
         var xy = points[i].split(',');
         var pt = new Point(xy[0], xy[1]);
         var n = i + 1;
         svgCPoint.add(n, pt);
-        debug.innerText += pt.x + ", " + pt.y + '\n';
+        debug.innerText += '| x:' + pt.x + ", y:" + pt.y + ', ';
+    }
+    return svgCPoint;
+});
+pts.forEach(function (pkt, i) {
+    var p = pkt.cp1();
+    var circle = new Circle(p, "3", "controlPoint", "cp1-" + i);
+    circle.draw();
+    if (i > 0) {
+        var p = pkt.cp2();
+        var circle = new Circle(p, "3", "controlPoint", "cp2-" + i);
+        circle.draw();
+        var p = pkt.curr();
+        var circle = new Circle(p, "3", "controlPoint", "cp3-" + i);
+        circle.draw();
     }
 });

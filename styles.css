@@ -40,7 +40,7 @@
 }
 
 [id^=cp1] {
-    stroke: red;
+    stroke: blue;
 }
 
 [id^=cp2] {

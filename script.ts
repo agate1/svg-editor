@@ -134,38 +134,67 @@ class Line {
 //svg path to points
 var commands = path.split(/(?=[LMCZ])/);
 
-var pts: Array<SVGCPoint> = commands.map((c) => {
+var pts: Array<SVGCPoint> = commands.map((c, k) => {
     var points = c.slice(1, c.length).split(' '); //svg 3points
     points.shift();
     points.pop();
 
     var svgCPoint = new SVGCPoint();
-        
     debug.innerText += '\n';
-    for (var i = 0; i < points.length; i++) {
-        var xy = points[i].split(',');
+
+    //if first point then add to array as third
+    if (k == 0) {
+        var xy = points[0].split(',');
         var pt = new Point(xy[0], xy[1]);
-        var n = i + 1;
+        var n = 3;
         svgCPoint.add(n, pt);
         debug.innerText += '| x:' + pt.x + ", y:" + pt.y + ', ';
+        return svgCPoint;
     }
-    return svgCPoint;
+    if (k > 0) {
+        for (var i = 0; i < points.length; i++) {
+            var xy = points[i].split(',');
+            var pt = new Point(xy[0], xy[1]);
+            var n = i + 1;
+            svgCPoint.add(n, pt);
+            debug.innerText += '| x:' + pt.x + ", y:" + pt.y + ', ';
+        }
+        return svgCPoint;
+    }
+
+
 });
 
+//draw lines and circles
+var p0:Point;
 pts.forEach((pkt: SVGCPoint, i: number) => {
-    var p: Point = pkt.cp1();
-    var circle = new Circle(p, "3", "controlPoint", "cp1-" + i);
-    circle.draw();
-
-    if (i > 0) {
-        var p: Point = pkt.cp2();
-        var circle = new Circle(p, "3", "controlPoint", "cp2-" + i);
-        circle.draw();
-
-        var p: Point = pkt.curr();
-        var circle = new Circle(p, "3", "controlPoint", "cp3-" + i);
-        circle.draw();
+    if (i == 0) {
+        p0 = pkt.curr();
     }
+    if (i >= 1) {
+        var p1: Point = pkt.cp1();
+        var circle1 = new Circle(p1, "3", "controlPoint", "cp1-" + i);
+        circle1.draw();
+
+        var line1 = new Line(p0, p1, "controlLine", "cl1-" + i);
+        line1.draw();
+
+        var p2: Point = pkt.cp2();
+        var circle2 = new Circle(p2, "3", "controlPoint", "cp2-" + i);
+        circle2.draw();
+
+        var p3: Point = pkt.curr();
+        var circle3 = new Circle(p3, "3", "currentPoint", "cp3-" + i);
+        circle3.draw();
+        p0 = new Point(p3.x,p3.y);
+
+        var line2 = new Line(p2, p3, "controlLine", "cl2-" + i);
+        line2.draw();
+    } 
+    
+    // if (i == 0) {
+    //     var line = new Line()
+    // }
 
 
 

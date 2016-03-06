@@ -74,8 +74,8 @@ var Circle = (function () {
         svg.appendChild(circle);
         this.el = document.getElementById(this.id);
     };
-    Circle.prototype.update = function (id, p) {
-        var circle = document.getElementById(id);
+    Circle.prototype.update = function (p) {
+        var circle = this.el;
         this.p = p;
         circle.setAttribute("cx", p.x);
         circle.setAttribute("cy", p.y);
@@ -108,6 +108,29 @@ var Line = (function () {
     };
     return Line;
 }());
+var SVGPath = (function () {
+    function SVGPath() {
+    }
+    SVGPath.prototype.addToPath = function (p) {
+        this.points.push(p);
+    };
+    SVGPath.prototype.updateSVGPoint = function (id, p) {
+        this.points[id - 1].cp1().x = p.x;
+        this.points[id - 1].cp1().y = p.y;
+        this.points[id].cp2().x = p.x;
+        this.points[id].cp2().y = p.y;
+        this.points[id].curr().x = p.x;
+        this.points[id].curr().y = p.y;
+    };
+    SVGPath.prototype.pathToString = function () {
+        var stringPath = "";
+        this.points.forEach(function (p) {
+            stringPath += "C " + p.cp1().x + "," + p.cp2().y + " " + p.cp2().x + "," + p.cp2().y + " " + p.curr().x + "," + p.curr().y + " ";
+        });
+        return stringPath;
+    };
+    return SVGPath;
+}());
 //svg path to points
 var commands = path.split(/(?=[LMCZ])/);
 var pts = commands.map(function (c, k) {
@@ -116,7 +139,7 @@ var pts = commands.map(function (c, k) {
     points.pop();
     var svgCPoint = new SVGCPoint();
     debug.innerText += '\n';
-    //if first point then add to array as third
+    //if initial (M) point then add to array as third
     if (k == 0) {
         var xy = points[0].split(',');
         var pt = new Point(xy[0], xy[1]);
@@ -146,10 +169,12 @@ pts.forEach(function (pkt, i) {
     if ((i >= 1) && (i < pts.length)) {
         debug.innerText = i + ' \n';
         var p1 = pkt.cp1();
+        //blue
         var circle1 = new Circle(p1, "3", "controlPoint", "cp1-" + i);
         circle1.draw();
         var line1 = new Line(p0, p1, "controlLine", "cl1-" + i);
         line1.draw();
+        //green
         var p2 = pkt.cp2();
         var circle2 = new Circle(p2, "3", "controlPoint", "cp2-" + i);
         circle2.draw();
@@ -161,22 +186,58 @@ pts.forEach(function (pkt, i) {
         line2.draw();
     }
 });
+function updateControlPoint(id, cp, dx, dy) {
+    var itemId = parseInt(id.split("-")[1]);
+    var tid = cp == "cp1" ? itemId + 1 : itemId;
+    var circle = document.getElementById(cp + "-" + tid);
+    var pktX = circle.getAttributeNS(null, "cx");
+    var pktY = circle.getAttributeNS(null, "cy");
+    var newX = parseFloat(pktX) - dx;
+    var newY = parseFloat(pktY) - dy;
+    circle.setAttribute("cx", newX.toString());
+    circle.setAttribute("cy", newY.toString());
+}
+/////////////////////
+function updateLine(id, cl, dx, dy) {
+    var itemId = parseInt(id.split("-")[1]);
+    var tid = cl == "cl1" ? itemId + 1 : itemId;
+    //var tid = (itemId) + 1;
+    var line = document.getElementById(cl + "-" + tid);
+    var points = line.getAttributeNS(null, "points").split(" ");
+    var startPoint = points[0];
+    var startXY = startPoint.split(",");
+    var endPoint = points[1];
+    var endXY = endPoint.split(",");
+    var newStartX = parseFloat(startXY[0]) - dx;
+    var newStartY = parseFloat(startXY[1]) - dy;
+    var newEndX = parseFloat(endXY[0]) - dx;
+    var newEndY = parseFloat(endXY[1]) - dy;
+    line.setAttribute("points", newStartX + "," + newStartY + " " + newEndX + "," + newEndY);
+}
 var currPoints = document.getElementsByClassName('currentPoint');
 [].forEach.call(currPoints, function (item) {
     item.onmousedown = function (e) {
         document.onmousemove = function (e) {
-            // var pktX = item.getAttributeNS(null, "cx");
-            // var pktY = item.getAttributeNS(null, "cy");
-            // var newX = e.pageX;
-            // var newY = e.pageY;
-            // item.setAttributeNS(null, "cx", newX);
-            // item.setAttributeNS(null, "cy", newY);
-            // var s = pktX + "," + pktY;
-            // var news = newX + "," + newY;
-            // //debug.innerText += 'punkty:' + s + '\n';
-            // //debug.innerText += 'punktynowe:' + news + '\n';
-            // var pp = G.getAttributeNS(null, "d");
-            // var newd = pp.replace(s, newX + "," + newY);
+            var pktX = item.getAttributeNS(null, "cx");
+            var pktY = item.getAttributeNS(null, "cy");
+            var newX = e.pageX;
+            var newY = e.pageY;
+            //updating current point
+            item.setAttributeNS(null, "cx", newX);
+            item.setAttributeNS(null, "cy", newY);
+            //update path
+            var oldPoint = pktX + "," + pktY;
+            var oldPath = G.getAttributeNS(null, "d");
+            var newPath = oldPath.replace(oldPoint, newX + "," + newY);
+            G.setAttributeNS(null, "d", newPath);
+            //update control point1
+            var przesX = pktX - newX;
+            var przesY = pktY - newY;
+            var newC1Point = new Point(e.pageX, e.pageY);
+            updateControlPoint(item.id, "cp1", przesX, przesY);
+            updateControlPoint(item.id, "cp2", przesX, przesY);
+            updateLine(item.id, "cl1", przesX, przesY);
+            updateLine(item.id, "cl2", przesX, przesY);
             //   //control points
             //   var itemId = item.getAttributeNS(null, "pID");
             //   var numID = itemId.split('-')[1];
@@ -202,9 +263,9 @@ var currPoints = document.getElementsByClassName('currentPoint');
             //   // debug.innerText = "idg: " + next;
             //   // }
             //   //cp0 till last element
-            //   //if (i == 0)  drawLine(p[i][0][0], p[i][0][1], p[p.length -1][2][0], p[p.length -1][2][1], "controlLine", "cl1-" + i);
-            //   //each point has only one line
-            //   updateLine(newX - cp1X, p[numID][1][1], newX, newY, "cl2-" + numID);
+            //   //if (i == 0)  drawLine(p[i][0][0], p[i][0][1], p[p.length -1][2][0], p[p.length -1][2][1],
+            // "controlLine", "cl1-" + i); //each point has only one line updateLine(newX - cp1X, p[numID][1][1], newX,
+            // newY, "cl2-" + numID);
         };
     };
 });

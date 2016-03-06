@@ -110,13 +110,15 @@ var Line = (function () {
 }());
 var SVGPath = (function () {
     function SVGPath() {
+        this.points = [];
     }
     SVGPath.prototype.addToPath = function (p) {
         this.points.push(p);
     };
-    SVGPath.prototype.updateSVGPoint = function (id, p) {
-        this.points[id - 1].cp1().x = p.x;
-        this.points[id - 1].cp1().y = p.y;
+    SVGPath.prototype.updateSVGPoint = function (itemId, p) {
+        var id = parseInt(itemId.split("-")[1]);
+        this.points[id + 1].p1.x = p.x;
+        this.points[id + 1].p1.y = p.y;
         this.points[id].cp2().x = p.x;
         this.points[id].cp2().y = p.y;
         this.points[id].curr().x = p.x;
@@ -125,14 +127,21 @@ var SVGPath = (function () {
     SVGPath.prototype.pathToString = function () {
         var stringPath = "";
         this.points.forEach(function (p) {
-            stringPath += "C " + p.cp1().x + "," + p.cp2().y + " " + p.cp2().x + "," + p.cp2().y + " " + p.curr().x + "," + p.curr().y + " ";
+            if (!p.p1) {
+                stringPath += "M " + p.curr().toPath() + " ";
+            }
+            else {
+                stringPath += "C " + p.p1.toPath() + " " + p.cp2().toPath() + " " + p.curr().toPath() + " ";
+            }
         });
+        stringPath += "Z";
         return stringPath;
     };
     return SVGPath;
 }());
 //svg path to points
 var commands = path.split(/(?=[LMCZ])/);
+var svgPath = new SVGPath();
 var pts = commands.map(function (c, k) {
     var points = c.slice(1, c.length).split(' '); //svg 3points
     points.shift();
@@ -146,6 +155,7 @@ var pts = commands.map(function (c, k) {
         var n = 3;
         svgCPoint.add(n, pt);
         debug.innerText += '| x:' + pt.x + ", y:" + pt.y + ', ';
+        svgPath.addToPath(svgCPoint);
         return svgCPoint;
     }
     if (k > 0) {
@@ -156,10 +166,12 @@ var pts = commands.map(function (c, k) {
             svgCPoint.add(n, pt);
             debug.innerText += '| x:' + pt.x + ", y:" + pt.y + ', ';
         }
+        svgPath.addToPath(svgCPoint);
         return svgCPoint;
     }
 });
 pts.pop();
+svgPath.points.pop();
 //draw lines and circles
 var p0;
 pts.forEach(function (pkt, i) {
@@ -226,10 +238,13 @@ var currPoints = document.getElementsByClassName('currentPoint');
             item.setAttributeNS(null, "cx", newX);
             item.setAttributeNS(null, "cy", newY);
             //update path
-            var oldPoint = pktX + "," + pktY;
-            var oldPath = G.getAttributeNS(null, "d");
-            var newPath = oldPath.replace(oldPoint, newX + "," + newY);
+            var newC1Point = new Point(e.pageX, e.pageY);
+            svgPath.updateSVGPoint(item.id, newC1Point);
+            var newPath = svgPath.pathToString();
+            debug.innerHTML = newPath;
             G.setAttributeNS(null, "d", newPath);
+            //var newPath = oldPath.replace(oldPoint, newX + "," + newY);
+            //G.setAttributeNS(null, "d", newPath);
             //update control point1
             var przesX = pktX - newX;
             var przesY = pktY - newY;

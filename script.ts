@@ -146,12 +146,13 @@ class SVGPath {
 		this.points.push(p);
 	}
 
-	updateSVGPoint(itemId, p:Point) {
+	updateSVGPoint(itemId, p:Point, dx, dy) {
 		var id = parseInt(itemId.split("-")[1]);
-		this.points[id + 1].p1.x = p.x;
-		this.points[id + 1].p1.y = p.y;
-		this.points[id].cp2().x = p.x;
-		this.points[id].cp2().y = p.y;
+
+		this.points[id + 1].p1.x = this.points[id + 1].p1.x - dx;
+		this.points[id + 1].p1.y = this.points[id + 1].p1.y - dy;
+		this.points[id].p2.x = this.points[id].cp2().x - dx;
+		this.points[id].p2.y = this.points[id].cp2().y - dy;
 		this.points[id].curr().x = p.x;
 		this.points[id].curr().y = p.y;
 	}
@@ -286,16 +287,6 @@ var currPoints = document.getElementsByClassName('currentPoint');
 			item.setAttributeNS(null, "cx", newX);
 			item.setAttributeNS(null, "cy", newY);
 
-			//update path
-			var newC1Point = new Point(e.pageX, e.pageY);
-			svgPath.updateSVGPoint(item.id, newC1Point);
-			var newPath = svgPath.pathToString();
-			debug.innerHTML = newPath;
-			G.setAttributeNS(null, "d", newPath);
-
-			//var newPath = oldPath.replace(oldPoint, newX + "," + newY);
-			//G.setAttributeNS(null, "d", newPath);
-
 			//update control point1
 			var przesX = pktX - newX;
 			var przesY = pktY - newY;
@@ -305,6 +296,13 @@ var currPoints = document.getElementsByClassName('currentPoint');
 			updateControlPoint(item.id, "cp2", przesX, przesY);
 			updateLine(item.id, "cl1", przesX, przesY);
 			updateLine(item.id, "cl2", przesX, przesY);
+
+			//update path
+			var newC1Point = new Point(e.pageX, e.pageY);
+			svgPath.updateSVGPoint(item.id, newC1Point, przesX, przesY);
+			var newPath = svgPath.pathToString();
+			debug.innerHTML = newPath;
+			G.setAttributeNS(null, "d", newPath);
 
 
 

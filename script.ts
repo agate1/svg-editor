@@ -146,7 +146,7 @@ class SVGPath {
 		this.points.push(p);
 	}
 
-	updateSVGPoint(itemId, p:Point, dx, dy) {
+	updateSVGPoint(itemId, p:Point, dx, dy, all) {
 		var id = parseInt(itemId.split("-")[1]);
 
 		this.points[id + 1].p1.x = this.points[id + 1].p1.x - dx;
@@ -155,6 +155,15 @@ class SVGPath {
 		this.points[id].p2.y = this.points[id].cp2().y - dy;
 		this.points[id].curr().x = p.x;
 		this.points[id].curr().y = p.y;
+	}
+
+	updateSVGPointPath(itemId, p:Point, dx, dy, all) {
+		var id = parseInt(itemId.split("-")[1]);
+
+		this.points[id + 1].p1.x = this.points[id + 1].p1.x - dx;
+		this.points[id + 1].p1.y = this.points[id + 1].p1.y - dy;
+		this.points[id].p2.x = parseFloat(this.points[id].cp2().x) + parseFloat(dx);
+		this.points[id].p2.y = parseFloat(this.points[id].cp2().y) + parseFloat(dy);
 	}
 
 	pathToString() {
@@ -272,6 +281,84 @@ function updateLine(id:string, cl, dx, dy) {
 	line.setAttribute("points", newStartX + "," + newStartY + " " + newEndX + "," + newEndY);
 }
 
+function partialUpdateLine(id:string, cl, anchorX, anchorY, dx, dy) {
+	var itemId = parseInt(id.split("-")[1]);
+	var tid = cl == "cl1" ? itemId + 1 : itemId;
+	//var tid = (itemId) + 1;
+	var line = document.getElementById(cl + "-" + tid);
+	var points = line.getAttributeNS(null, "points").split(" ");
+	var startPoint = points[0];
+	var startXY = startPoint.split(",");
+	var endPoint = points[1];
+	var endXY = endPoint.split(",");
+
+	//find current point, this stays the other moves
+	if((parseFloat(startXY[0]) == anchorX) && (parseFloat(startXY[1]) == anchorY)) {
+		var newX = parseFloat(endXY[0]) - dx;
+		var newY = parseFloat(endXY[1]) - dy;
+		line.setAttribute("points", anchorX + "," + anchorY + " " + newX + "," + newY);
+
+	} else {
+		var newX = parseFloat(startXY[0]) - dx;
+		var newY = parseFloat(startXY[1]) - dy;
+		line.setAttribute("points", newX + "," + newY + " " + anchorX + "," + anchorY);
+	}
+}
+
+function getIdNumber (s:string) {
+	var idNumber = parseInt(s.split("-")[1]);
+	return idNumber;
+}
+
+function getItemFullId (idNum:number, itemType:string) {
+	return itemType + "-" + idNum;
+}
+
+function getItemType (item:HTMLElement) {
+	return item.id.split("-")[0];
+}
+
+function getOtherControlPoint (item:HTMLElement) {
+	var itemType = getItemType(item);
+	var idNum, siblingId;
+	switch (itemType) {
+		case "cp1":
+			idNum = getIdNumber(item.id);
+			siblingId = getItemFullId(idNum - 1,"cp2");
+			break;
+		case "cp2":
+			idNum = getIdNumber(item.id);
+			siblingId = getItemFullId(idNum,"cp1");
+			break;
+	}
+	return document.getElementById(siblingId);
+}
+
+function getCurrentPoint (item:HTMLElement) {
+	var itemType = getItemType(item);
+	var idNum, siblingId;
+	switch (itemType) {
+		case "cp1":
+			idNum = getIdNumber(item.id);
+			siblingId = getItemFullId(idNum - 1,"cp3");
+			break;
+		case "cp2":
+			idNum = getIdNumber(item.id);
+			siblingId = getItemFullId(idNum,"cp3");
+			break;
+	}
+	return document.getElementById(siblingId);
+}
+
+function getX (item) {
+	return item.getAttributeNS(null, "cx");
+}
+
+function getY (item) {
+	return item.getAttributeNS(null, "cy");
+}
+
+///user moves current point
 var currPoints = document.getElementsByClassName('currentPoint');
 [].forEach.call(currPoints, (item) => {
 	item.onmousedown = (e) => {
@@ -291,7 +378,7 @@ var currPoints = document.getElementsByClassName('currentPoint');
 			var przesX = pktX - newX;
 			var przesY = pktY - newY;
 
-			var newC1Point = new Point(e.pageX, e.pageY);
+			//var newC1Point = new Point(e.pageX, e.pageY);
 			updateControlPoint(item.id, "cp1", przesX, przesY);
 			updateControlPoint(item.id, "cp2", przesX, przesY);
 			updateLine(item.id, "cl1", przesX, przesY);
@@ -299,48 +386,51 @@ var currPoints = document.getElementsByClassName('currentPoint');
 
 			//update path
 			var newC1Point = new Point(e.pageX, e.pageY);
-			svgPath.updateSVGPoint(item.id, newC1Point, przesX, przesY);
+			svgPath.updateSVGPoint(item.id, newC1Point, przesX, przesY, true);
 			var newPath = svgPath.pathToString();
 			debug.innerHTML = newPath;
 			G.setAttributeNS(null, "d", newPath);
 
-
-
-			//   //control points
-			//   var itemId = item.getAttributeNS(null, "pID");
-			//   var numID = itemId.split('-')[1];
-			//   var nn = parseInt(numID);
-			//   debug.innerText = nn;
-
-			//   var cp1 = document.getElementById("cp1-" + nn);
-			//   var cp1X = cp1.getAttributeNS(null, "cx");
-			//   var cp1Y = cp1.getAttributeNS(null, "cy");
-			//   //debug.innerText = 'punktynowe:';
-			//   var newd1 = newd.replace(cp1X + "," + cp1Y, newX + "," + newY);
-			//   //debug.innerText += newd;
-			//   //debug.innerText += 'punkty:' + pktX + "," + pktY + '\n';
-			//   G.setAttributeNS(null, "d", newd1);
-
-			//   var next = nn;
-
-			//   updateCircle(newX - cp1X,newY - cp1Y,"cp2-" + next)
-			//   updateCircle(newX - cp1X,newY - cp1Y,"cp1-" + next)
-
-			//   //check what id is to be udated
-			//   var itemId = item.getAttributeNS(null, "pID");
-			//   var numID = itemId.split('-')[1];
-			//   var next = parseInt(numID) + 1;
-			//   //debug.innerText = "idgnext: " + next;
-			//   updateLine(newX - cp1X, newY - cp1Y, newX, newY, "cl1-" + next);
-			//   // debug.innerText = "idg: " + next;
-			//   // }
-			//   //cp0 till last element
-			//   //if (i == 0)  drawLine(p[i][0][0], p[i][0][1], p[p.length -1][2][0], p[p.length -1][2][1],
-			// "controlLine", "cl1-" + i); //each point has only one line updateLine(newX - cp1X, p[numID][1][1], newX,
-			// newY, "cl2-" + numID);
 		}
 	}
-})
+});
+
+///user moves control point 1
+var currPoints = document.getElementsByClassName('controlPoint');
+[].forEach.call(currPoints, (item) => {
+	item.onmousedown = (e) => {
+		document.onmousemove = (e) => {
+
+			var pktX = item.getAttributeNS(null, "cx");
+			var pktY = item.getAttributeNS(null, "cy");
+			var newX = e.pageX;
+			var newY = e.pageY;
+
+			//updating current point
+			item.setAttributeNS(null, "cx", newX);
+			item.setAttributeNS(null, "cy", newY);
+
+			var otherCP = getOtherControlPoint(item);
+			//update control point1
+			var przesX =  pktX - newX;
+			var przesY =  pktY - newY;
+			var otherCPType = getItemType(otherCP);
+			//parseFloat(getY(otherCP))
+
+			updateControlPoint(otherCP.id, otherCPType, -przesX, -przesY);
+			//updateLine(item.id, "cl1", newX, newY);
+			//updateLine(item.id, "cl2", przesX, przesY);
+
+			//update path
+			var newC1Point = new Point(e.pageX, e.pageY);
+			svgPath.updateSVGPointPath(otherCP.id, newC1Point, przesX, przesY, false);
+
+			var newPath = svgPath.pathToString();
+			debug.innerHTML = newPath;
+			G.setAttributeNS(null, "d", newPath);
+		}
+	}
+});
 
 document.onmouseup = function () {
 	document.onmousemove = null;

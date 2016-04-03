@@ -233,9 +233,16 @@ function updateLine(id, cl, dx, dy) {
     var newEndY = parseFloat(endXY[1]) - dy;
     line.setAttribute("points", newStartX + "," + newStartY + " " + newEndX + "," + newEndY);
 }
-function partialUpdateLine(id, cl, anchorX, anchorY, dx, dy) {
+function partialUpdateLine(id, cl, x1, y1, x2, y2, option) {
     var itemId = parseInt(id.split("-")[1]);
-    var tid = cl == "cl1" ? itemId + 1 : itemId;
+    if (option == 1) {
+        var tid = (cl == "cl1") ? itemId + 1 : itemId;
+    }
+    else {
+        var tid = (cl == "cl1") ? itemId : itemId;
+    }
+    //if (cl == "cl1") var tid = itemId + 1;
+    //if (cl == "cl2") var tid = itemId;
     //var tid = (itemId) + 1;
     var line = document.getElementById(cl + "-" + tid);
     var points = line.getAttributeNS(null, "points").split(" ");
@@ -244,16 +251,16 @@ function partialUpdateLine(id, cl, anchorX, anchorY, dx, dy) {
     var endPoint = points[1];
     var endXY = endPoint.split(",");
     //find current point, this stays the other moves
-    if ((parseFloat(startXY[0]) == anchorX) && (parseFloat(startXY[1]) == anchorY)) {
-        var newX = parseFloat(endXY[0]) - dx;
-        var newY = parseFloat(endXY[1]) - dy;
-        line.setAttribute("points", anchorX + "," + anchorY + " " + newX + "," + newY);
-    }
-    else {
-        var newX = parseFloat(startXY[0]) - dx;
-        var newY = parseFloat(startXY[1]) - dy;
-        line.setAttribute("points", newX + "," + newY + " " + anchorX + "," + anchorY);
-    }
+    // if((parseFloat(startXY[0]) == anchorX) && (parseFloat(startXY[1]) == anchorY)) {
+    // 	var newX = parseFloat(endXY[0]) - dx;
+    // 	var newY = parseFloat(endXY[1]) - dy;
+    line.setAttribute("points", x1 + "," + y1 + " " + x2 + "," + y2);
+    //
+    // } else {
+    // 	var newX = parseFloat(startXY[0]) - dx;
+    // 	var newY = parseFloat(startXY[1]) - dy;
+    // 	line.setAttribute("points", newX + "," + newY + " " + anchorX + "," + anchorY);
+    // }
 }
 function getIdNumber(s) {
     var idNumber = parseInt(s.split("-")[1]);
@@ -353,8 +360,21 @@ var currPoints = document.getElementsByClassName('controlPoint');
             var curr = getCurrentPoint(item);
             var currX = getX(curr);
             var currY = getY(curr);
-            partialUpdateLine(item.id, "cl1", currX, currY, przesX, przesX);
-            partialUpdateLine(item.id, "cl2", currX, currY, -przesX, -przesY);
+            var c2X = getX(otherCP);
+            var c2Y = getY(otherCP);
+            if (getItemType(item) == "cp1") {
+                partialUpdateLine(otherCP.id, "cl1", currX, currY, newX, newY, 1);
+                partialUpdateLine(otherCP.id, "cl2", currX, currY, c2X, c2Y, 1);
+            }
+            else {
+                var firstCp = getOtherControlPoint(item);
+                var c1X = getX(firstCp);
+                var c1Y = getY(firstCp);
+                partialUpdateLine(otherCP.id, "cl1", currX, currY, c2X, c2Y, 2);
+                partialUpdateLine(otherCP.id, "cl2", currX, currY, newX, newY, 2);
+            }
+            //partialUpdateLine(otherCP.id, "cl1", currX, currY, przesX, przesX);
+            //partialUpdateLine(otherCP.id, "cl2", currX, currY, -przesX, -przesY);
             //update path
             var newC1Point = new Point(e.pageX, e.pageY);
             if (getItemType(item) == "cp1") {

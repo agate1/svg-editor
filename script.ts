@@ -418,12 +418,20 @@ var currPoints = document.getElementsByClassName('controlPoint');
 			//parseFloat(getY(otherCP))
 
 			updateControlPoint(otherCP.id, otherCPType, -przesX, -przesY);
-			//updateLine(item.id, "cl1", newX, newY);
-			//updateLine(item.id, "cl2", przesX, przesY);
+			//get cuurent point position
+			var curr = getCurrentPoint(item);
+			var currX = getX(curr);
+			var currY =  getY(curr);
+			partialUpdateLine(item.id, "cl1", currX, currY, przesX, przesX);
+			partialUpdateLine(item.id, "cl2", currX, currY, -przesX, -przesY);
 
 			//update path
 			var newC1Point = new Point(e.pageX, e.pageY);
-			svgPath.updateSVGPointPath(otherCP.id, newC1Point, przesX, przesY, false);
+			if ( getItemType(item) == "cp1") {
+				svgPath.updateSVGPointPath(otherCP.id, newC1Point, przesX, przesY, false);
+			} else {
+				svgPath.updateSVGPointPath(otherCP.id, newC1Point, -przesX, -przesY, false);
+			}
 
 			var newPath = svgPath.pathToString();
 			debug.innerHTML = newPath;

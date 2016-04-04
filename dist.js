@@ -367,10 +367,12 @@ var currPoints = document.getElementsByClassName('controlPoint');
                 partialUpdateLine(otherCP.id, "cl2", currX, currY, c2X, c2Y, 1);
             }
             else {
-                var firstCp = getOtherControlPoint(item);
+                var id = "cp1-" + (getIdNumber(item.id) + 1);
+                var idcl1 = "cl1-" + (getIdNumber(item.id) + 1);
+                var firstCp = document.getElementById(id);
                 var c1X = getX(firstCp);
                 var c1Y = getY(firstCp);
-                partialUpdateLine(otherCP.id, "cl1", currX, currY, c2X, c2Y, 2);
+                partialUpdateLine(idcl1, "cl1", currX, currY, c1X, c1Y, 2);
                 partialUpdateLine(otherCP.id, "cl2", currX, currY, newX, newY, 2);
             }
             //partialUpdateLine(otherCP.id, "cl1", currX, currY, przesX, przesX);

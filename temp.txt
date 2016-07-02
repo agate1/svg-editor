@@ -23,7 +23,7 @@ class Point {
 
 /**
  * SVGPoint
- */
+ */pa
 class SVGCPoint {
 	private p1:Point;
 	private p2:Point;

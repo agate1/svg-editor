@@ -2,7 +2,7 @@
   display:block;
 } */
 
-.currentPoint {
+.currentPoint, .p {
   /*//stroke: #e64343;*/
   /*//fill: black;*/
   stroke-width: 4;
@@ -10,7 +10,7 @@
   cursor:move;
   }
 
-.currentPoint:hover {
+.currentPoint:hover, .p:hover {
   stroke: #e64343;
   fill: black;
   stroke-width: 4;

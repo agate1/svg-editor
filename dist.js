@@ -20,6 +20,11 @@ var Circle = (function () {
         svg.appendChild(circle);
         this.el = document.getElementById(this.id);
     }
+    Circle.prototype.update = function (p) {
+        this.center = p;
+        this.el.setAttributeNS(null, "cx", p.x.toString());
+        this.el.setAttributeNS(null, "cy", p.y.toString());
+    };
     return Circle;
 }());
 /**
@@ -38,6 +43,11 @@ var Line = (function () {
         svg.appendChild(line);
         this.el = document.getElementById(this.id);
     }
+    Line.prototype.update = function (p1, p2) {
+        this.p1 = p1;
+        this.p2 = p2;
+        this.el.setAttribute("points", this.p1.toPath() + " " + this.p2.toPath());
+    };
     return Line;
 }());
 /**
@@ -63,7 +73,7 @@ var SVGPointC = (function () {
         this.cp1 = cp1;
         var pCircle = new Circle(p, "3", "currentPoint", "p-" + i);
         var cp1Circle = new Circle(cp1, "3", "controlPoint", "cp1-" + i); //blue
-        var cp1Line = new Line(p, cp1, "controlLine", "cl2-" + i);
+        var cp1Line = new Line(p, cp1, "controlLine", "cl1-" + i);
         var cp2Circle = new Circle(cp2, "3", "controlPoint", "cp2-" + i); //green
         var cp2Line = new Line(p, cp2, "controlLine", "cl2-" + i);
         this.pCircle = pCircle;
@@ -72,6 +82,16 @@ var SVGPointC = (function () {
         this.cp1Line = cp1Line;
         this.cp2Line = cp2Line;
     }
+    SVGPointC.prototype.update = function (cp1, p, cp2) {
+        this.p = p;
+        this.cp2 = cp2;
+        this.cp1 = cp1;
+        this.pCircle.update(p);
+        this.cp1Circle.update(cp1);
+        this.cp2Circle.update(cp2);
+        this.cp1Line.update(p, cp1);
+        this.cp2Line.update(p, cp2);
+    };
     return SVGPointC;
 }());
 /**
@@ -140,7 +160,13 @@ var svgpath = new MySVGPath(path);
 svgpath.points.forEach(function (pkt, i) {
     pkt.pCircle.el.onmousedown = function (e) {
         document.onmousemove = function (e) {
-            debug.innerText += "aa";
+            var newX = e.pageX;
+            var newY = e.pageY;
+            var newP = new P(newX + "," + newY);
+            var oldp = pkt.p;
+            var oldcp1 = pkt.cp1;
+            var oldcp2 = pkt.cp2;
+            pkt.update(oldcp1, newP, oldcp2);
         };
     };
 });

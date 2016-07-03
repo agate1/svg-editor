@@ -27,6 +27,12 @@ class Circle {
 		svg.appendChild(circle);
 		this.el = document.getElementById(this.id);
 	}
+
+	update(p: P) {
+		this.center = p;
+		this.el.setAttributeNS(null, "cx", p.x.toString());
+		this.el.setAttributeNS(null, "cy", p.y.toString());
+	}
 }
 
 /**
@@ -50,6 +56,11 @@ class Line {
 		line.setAttribute("id", this.id);
 		svg.appendChild(line);
 		this.el = document.getElementById(this.id);
+	}
+	update(p1, p2) {
+		this.p1 = p1;
+		this.p2 = p2;
+		this.el.setAttribute("points", this.p1.toPath() + " " + this.p2.toPath());
 	}
 }
 
@@ -88,7 +99,7 @@ class SVGPointC {
 
 		var pCircle: Circle = new Circle(p, "3", "currentPoint", "p-" + i);
 		var cp1Circle: Circle = new Circle(cp1, "3", "controlPoint", "cp1-" + i); //blue
-		var cp1Line: Line = new Line(p, cp1, "controlLine", "cl2-" + i)
+		var cp1Line: Line = new Line(p, cp1, "controlLine", "cl1-" + i)
 		var cp2Circle: Circle = new Circle(cp2, "3", "controlPoint", "cp2-" + i); //green
 		var cp2Line: Line = new Line(p, cp2, "controlLine", "cl2-" + i)
 
@@ -98,6 +109,18 @@ class SVGPointC {
 		this.cp2Circle = cp2Circle;
 		this.cp1Line = cp1Line;
 		this.cp2Line = cp2Line;
+	}
+
+	update(cp1: P, p: P, cp2: P) {
+		this.p = p;
+		this.cp2 = cp2;
+		this.cp1 = cp1;
+
+		this.pCircle.update(p);
+		this.cp1Circle.update(cp1);
+		this.cp2Circle.update(cp2);
+		this.cp1Line.update(p, cp1);
+		this.cp2Line.update(p, cp2);
 	}
 
 }
@@ -193,11 +216,18 @@ var svgpath = new MySVGPath(path);
 //user moves colntrols
 svgpath.points.forEach((pkt, i) => {
 
-
-
 	pkt.pCircle.el.onmousedown = (e) => {
 		document.onmousemove = (e) => {
-			debug.innerText += "aa";
+			var newX = e.pageX;
+			var newY = e.pageY;
+
+			var newP = new P(newX + "," + newY);
+
+			var oldp = pkt.p;
+			var oldcp1 = pkt.cp1;
+			var oldcp2 = pkt.cp2;
+			pkt.update(oldcp1, newP, oldcp2);
+
 		}
 	}
 

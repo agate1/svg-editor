@@ -1,5 +1,8 @@
 {
     "compilerOptions": {
         "outFile": "dist.js"
-    }
+    },
+    "exclude": [
+        "dist.js"
+    ]
 }

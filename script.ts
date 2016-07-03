@@ -111,13 +111,31 @@ class SVGPointC {
 		this.cp2Line = cp2Line;
 	}
 
-	update(newX, newY) {
-		var dx = this.p.x - newX;
-		var dy = this.p.y - newY;
+	update(newX, newY, pointType) {
 
-		var newP = new P(newX + "," + newY);
-		var newCp1 = new P((this.cp1.x - dx) + "," + (this.cp1.y - dy));
-		var newCp2 = new P((this.cp2.x - dx) + "," + (this.cp2.y - dy));
+		switch (pointType) {
+			case "p":
+				var dx = this.p.x - newX;
+				var dy = this.p.y - newY;
+				var newP = new P(newX + "," + newY);
+				var newCp1 = new P((this.cp1.x - dx) + "," + (this.cp1.y - dy));
+				var newCp2 = new P((this.cp2.x - dx) + "," + (this.cp2.y - dy));
+				break;
+			case "cp1":
+				var dx = this.cp1.x - newX;
+				var dy = this.cp1.y - newY;
+				var newP = this.p;
+				var newCp1 = new P(newX + "," + newY);
+				var newCp2 = new P((this.cp2.x + dx) + "," + (this.cp2.y + dy));
+				break;
+			case "cp2":
+				var dx = this.cp2.x - newX;
+				var dy = this.cp2.y - newY;
+				var newP = this.p;
+				var newCp1 = new P((this.cp1.x + dx) + "," + (this.cp1.y + dy));
+				var newCp2 = new P(newX + "," + newY);
+				break;
+		}
 
 		this.p = newP;
 		this.cp1 = newCp1;
@@ -243,9 +261,26 @@ svgpath.points.forEach((pkt, i) => {
 		document.onmousemove = (e) => {
 			var newX = e.pageX;
 			var newY = e.pageY;
-			pkt.update(newX, newY);
+			pkt.update(newX, newY, "p");
+			svgpath.draw()
+		}
+	}
+	if (i > 0) {
+		pkt.cp1Circle.el.onmousedown = (e) => {
+			document.onmousemove = (e) => {
+				var newX = e.pageX;
+				var newY = e.pageY;
+				pkt.update(newX, newY, "cp1");
+				svgpath.draw()
+			}
+		}
+	}
 
-			//update lines
+	pkt.cp2Circle.el.onmousedown = (e) => {
+		document.onmousemove = (e) => {
+			var newX = e.pageX;
+			var newY = e.pageY;
+			pkt.update(newX, newY, "cp2");
 			svgpath.draw()
 		}
 	}

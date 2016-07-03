@@ -135,6 +135,23 @@ var MySVGPath = (function () {
             k++;
         }
     }
+    MySVGPath.prototype.draw = function () {
+        var newPath = "";
+        this.points.forEach(function (pkt, i) {
+            if (i == 0) {
+                newPath += "M " + pkt.p.toPath();
+                newPath += " C " + pkt.cp2.toPath();
+            }
+            else {
+                newPath += " " + pkt.cp1.toPath();
+                newPath += " " + pkt.p.toPath() + " C";
+                newPath += " " + pkt.cp2.toPath();
+            }
+        });
+        newPath += " Z";
+        debug.innerText = newPath;
+        G.setAttributeNS(null, "d", newPath);
+    };
     return MySVGPath;
 }());
 function updateLine(id, lineType, dx, dy) {
@@ -167,6 +184,7 @@ svgpath.points.forEach(function (pkt, i) {
             var oldcp1 = pkt.cp1;
             var oldcp2 = pkt.cp2;
             pkt.update(oldcp1, newP, oldcp2);
+            svgpath.draw();
         };
     };
 });

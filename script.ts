@@ -182,7 +182,23 @@ class MySVGPath {
 			this.points.push(pkt);
 			k++;
 		}
+	}
+	draw() {
+		var newPath: string = "";
+		this.points.forEach((pkt, i) => {
+			if (i == 0) {
+				newPath += "M " + pkt.p.toPath();
+				newPath += " C " + pkt.cp2.toPath();
+			} else {
+				newPath += " " + pkt.cp1.toPath();
+				newPath += " " + pkt.p.toPath() + " C";
+				newPath += " " + pkt.cp2.toPath();
 
+			}
+		});
+		newPath += " Z";
+		debug.innerText = newPath;
+		G.setAttributeNS(null, "d", newPath);
 	}
 }
 
@@ -227,10 +243,9 @@ svgpath.points.forEach((pkt, i) => {
 			var oldcp1 = pkt.cp1;
 			var oldcp2 = pkt.cp2;
 			pkt.update(oldcp1, newP, oldcp2);
-
+			svgpath.draw()
 		}
 	}
-
 })
 debug.innerText += "kkkk";
 

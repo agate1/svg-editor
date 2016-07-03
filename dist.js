@@ -177,26 +177,10 @@ var MySVGPath = (function () {
     };
     return MySVGPath;
 }());
-function updateLine(id, lineType, dx, dy) {
-    var itemId = parseInt(id.split("-")[1]);
-    var tid = lineType == "cl1" ? itemId + 1 : itemId;
-    //var tid = (itemId) + 1;
-    var line = document.getElementById(lineType + "-" + tid);
-    var points = line.getAttributeNS(null, "points").split(" ");
-    var startPoint = points[0];
-    var startXY = startPoint.split(",");
-    var endPoint = points[1];
-    var endXY = endPoint.split(",");
-    var newStartX = parseFloat(startXY[0]) - dx;
-    var newStartY = parseFloat(startXY[1]) - dy;
-    var newEndX = parseFloat(endXY[0]) - dx;
-    var newEndY = parseFloat(endXY[1]) - dy;
-    line.setAttribute("points", newStartX + "," + newStartY + " " + newEndX + "," + newEndY);
-}
 //svg path to points
 var svgpath = new MySVGPath(path);
 //d=" M 190,21 C 213,7 246,10 266,28 C 261,34 256,40 251,46 C 242,38 229,33 216,35 C 210,36 204,40 200,45 C 188,57 189,78 201,90 C 208,97 219,99 229,98 C 233,97 238,95 242,93 C 242,84 242,75 242,65 C 250,65 257,65 265,65 C 265,79 265,93 265,107 C 249,117 230,123 211,120 C 196,118 181,109 173,96 C 164,84 162,68 166,54 C 169,40 178,28 190,21 Z"></path>
-//user moves colntrols
+//user moves controls
 svgpath.points.forEach(function (pkt, i) {
     //update current point
     pkt.pCircle.el.onmousedown = function (e) {
@@ -208,6 +192,7 @@ svgpath.points.forEach(function (pkt, i) {
         };
     };
     if (i > 0) {
+        //update control point1
         pkt.cp1Circle.el.onmousedown = function (e) {
             document.onmousemove = function (e) {
                 var newX = e.pageX;
@@ -217,6 +202,7 @@ svgpath.points.forEach(function (pkt, i) {
             };
         };
     }
+    //update control point2
     pkt.cp2Circle.el.onmousedown = function (e) {
         document.onmousemove = function (e) {
             var newX = e.pageX;
@@ -226,7 +212,7 @@ svgpath.points.forEach(function (pkt, i) {
         };
     };
 });
-debug.innerText += "kkkk";
+//debug.innerText += "";
 document.onmouseup = function () {
     document.onmousemove = null;
 };

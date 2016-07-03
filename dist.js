@@ -82,15 +82,20 @@ var SVGPointC = (function () {
         this.cp1Line = cp1Line;
         this.cp2Line = cp2Line;
     }
-    SVGPointC.prototype.update = function (cp1, p, cp2) {
-        this.p = p;
-        this.cp2 = cp2;
-        this.cp1 = cp1;
-        this.pCircle.update(p);
-        this.cp1Circle.update(cp1);
-        this.cp2Circle.update(cp2);
-        this.cp1Line.update(p, cp1);
-        this.cp2Line.update(p, cp2);
+    SVGPointC.prototype.update = function (newX, newY) {
+        var dx = this.p.x - newX;
+        var dy = this.p.y - newY;
+        var newP = new P(newX + "," + newY);
+        var newCp1 = new P((this.cp1.x - dx) + "," + (this.cp1.y - dy));
+        var newCp2 = new P((this.cp2.x - dx) + "," + (this.cp2.y - dy));
+        this.p = newP;
+        this.cp1 = newCp1;
+        this.cp2 = newCp2;
+        this.pCircle.update(newP);
+        this.cp1Circle.update(newCp1);
+        this.cp2Circle.update(newCp2);
+        this.cp1Line.update(newP, newCp1);
+        this.cp2Line.update(newP, newCp2);
     };
     return SVGPointC;
 }());
@@ -175,15 +180,13 @@ var svgpath = new MySVGPath(path);
 //d=" M 190,21 C 213,7 246,10 266,28 C 261,34 256,40 251,46 C 242,38 229,33 216,35 C 210,36 204,40 200,45 C 188,57 189,78 201,90 C 208,97 219,99 229,98 C 233,97 238,95 242,93 C 242,84 242,75 242,65 C 250,65 257,65 265,65 C 265,79 265,93 265,107 C 249,117 230,123 211,120 C 196,118 181,109 173,96 C 164,84 162,68 166,54 C 169,40 178,28 190,21 Z"></path>
 //user moves colntrols
 svgpath.points.forEach(function (pkt, i) {
+    //update current point
     pkt.pCircle.el.onmousedown = function (e) {
         document.onmousemove = function (e) {
             var newX = e.pageX;
             var newY = e.pageY;
-            var newP = new P(newX + "," + newY);
-            var oldp = pkt.p;
-            var oldcp1 = pkt.cp1;
-            var oldcp2 = pkt.cp2;
-            pkt.update(oldcp1, newP, oldcp2);
+            pkt.update(newX, newY);
+            //update lines
             svgpath.draw();
         };
     };

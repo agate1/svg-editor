@@ -111,16 +111,23 @@ class SVGPointC {
 		this.cp2Line = cp2Line;
 	}
 
-	update(cp1: P, p: P, cp2: P) {
-		this.p = p;
-		this.cp2 = cp2;
-		this.cp1 = cp1;
+	update(newX, newY) {
+		var dx = this.p.x - newX;
+		var dy = this.p.y - newY;
 
-		this.pCircle.update(p);
-		this.cp1Circle.update(cp1);
-		this.cp2Circle.update(cp2);
-		this.cp1Line.update(p, cp1);
-		this.cp2Line.update(p, cp2);
+		var newP = new P(newX + "," + newY);
+		var newCp1 = new P((this.cp1.x - dx) + "," + (this.cp1.y - dy));
+		var newCp2 = new P((this.cp2.x - dx) + "," + (this.cp2.y - dy));
+
+		this.p = newP;
+		this.cp1 = newCp1;
+		this.cp2 = newCp2;
+
+		this.pCircle.update(newP);
+		this.cp1Circle.update(newCp1);
+		this.cp2Circle.update(newCp2);
+		this.cp1Line.update(newP, newCp1);
+		this.cp2Line.update(newP, newCp2);
 	}
 
 }
@@ -231,18 +238,14 @@ var svgpath = new MySVGPath(path);
 
 //user moves colntrols
 svgpath.points.forEach((pkt, i) => {
-
+	//update current point
 	pkt.pCircle.el.onmousedown = (e) => {
 		document.onmousemove = (e) => {
 			var newX = e.pageX;
 			var newY = e.pageY;
+			pkt.update(newX, newY);
 
-			var newP = new P(newX + "," + newY);
-
-			var oldp = pkt.p;
-			var oldcp1 = pkt.cp1;
-			var oldcp2 = pkt.cp2;
-			pkt.update(oldcp1, newP, oldcp2);
+			//update lines
 			svgpath.draw()
 		}
 	}
